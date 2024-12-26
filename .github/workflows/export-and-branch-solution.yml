@@ -38,7 +38,7 @@ jobs:
     # Alternative: runs-on: ubuntu-latest
     env:
       RUNNER_DEBUG: 1
-
+      ACTIONS_STEP_DEBUG: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -46,7 +46,7 @@ jobs:
           lfs: true
 
       - name: Who-Am-I action
-        uses: microsoft/powerplatform-actions/who-am-i@v0
+        uses: microsoft/powerplatform-actions/who-am-i@v1
         with:
           environment-url: ${{ env.ENVIRONMENT_URL }}
           app-id: ${{ env.CLIENT_ID }}
