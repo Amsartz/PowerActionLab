@@ -46,7 +46,7 @@ jobs:
 
       - name: Test Connectivity to Action URL
         run: |
-          curl -I https://api.github.com/repos/microsoft/powerplatform-actions/zipball/v1
+          curl --max-time 300 -I https://api.github.com/repos/microsoft/powerplatform-actions/zipball/v1
           ping api.github.com -c 4
 
       - name: Who-Am-I action
