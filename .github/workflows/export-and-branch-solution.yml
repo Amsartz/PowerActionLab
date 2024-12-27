@@ -44,11 +44,13 @@ jobs:
         with:
           lfs: true
 
-      - name: Test Connectivity to Action URL
-        run: |
-          curl -L --max-time 300 -I https://api.github.com/repos/microsoft/powerplatform-actions/zipball/v1
-          ping api.github.com -c 4
-          curl -I https://api.github.com/rate_limit
+      - name: Download PowerPlatform Actions
+        run: curl -L --max-time 300 -O https://codeload.github.com/microsoft/powerplatform-actions/legacy.zip/refs/tags/v1
+             ping api.github.com -c 4
+       
+      - name: Test connectivity to GitHub API
+        run: curl -I https://api.github.com
+         
       - name: Who-Am-I action
         uses: microsoft/powerplatform-actions/who-am-i@v1  # Updated to v1
         with:
