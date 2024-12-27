@@ -50,7 +50,8 @@ jobs:
        
       - name: Test connectivity to GitHub API
         run: curl -I https://api.github.com
-         
+      - name: Install Power Platform CLI
+        uses: microsoft/powerplatform-actions/install@v1
       - name: Who-Am-I action
         uses: microsoft/powerplatform-actions/who-am-i@v1  # Updated to v1
         with:
