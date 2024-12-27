@@ -41,12 +41,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           lfs: true
 
       - name: Who-Am-I action
-        uses: microsoft/powerplatform-actions/who-am-i@v0
+        uses: microsoft/powerplatform-actions/who-am-i@v1
         with:
           environment-url: ${{ env.ENVIRONMENT_URL }}
           app-id: ${{ env.CLIENT_ID }}
@@ -54,7 +54,7 @@ jobs:
           tenant-id: ${{ env.TENANT_ID }}
 
       - name: Export solution action
-        uses: microsoft/powerplatform-actions/export-solution@v0
+        uses: microsoft/powerplatform-actions/export-solution@v1
         with:
           environment-url: ${{ env.ENVIRONMENT_URL }}
           app-id: ${{ env.CLIENT_ID }}
@@ -64,7 +64,7 @@ jobs:
           solution-output-file: ${{ github.event.inputs.solution_exported_folder }}${{ github.event.inputs.solution_name }}.zip
 
       - name: Unpack solution action
-        uses: microsoft/powerplatform-actions/unpack-solution@v0
+        uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
           solution-file: ${{ github.event.inputs.solution_exported_folder }}${{ github.event.inputs.solution_name }}.zip
           solution-folder: ${{ github.event.inputs.solution_folder }}${{ github.event.inputs.solution_name }}
@@ -72,9 +72,19 @@ jobs:
           overwrite-files: true
 
       - name: Branch solution, prepare it for a Pull Request
-        uses: microsoft/powerplatform-actions/branch-solution@v0
+        uses: microsoft/powerplatform-actions/branch-solution@v1
         with:
           solution-folder: ${{ github.event.inputs.solution_folder }}${{ github.event.inputs.solution_name }}
           solution-target-folder: ${{ github.event.inputs.solution_target_folder }}${{ github.event.inputs.solution_name }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           allow-empty-commit: true
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Add solution updates"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
