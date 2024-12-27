@@ -40,10 +40,12 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
-      timeout-minutes: 10
-
+      with:
+        fetch-depth: 0
+        timeout-minutes: 10
     - name: Install Dependencies
       run: npm install -g pac
+            curl -I https://api.github.com/repos/microsoft/powerplatform-actions/zipball/0c80aacb61f9bfdcb930b880febc420ec4ef2f3e
 
     - name: Run Who-Am-I Action
       uses: microsoft/powerplatform-actions/who-am-i@v1
