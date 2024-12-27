@@ -4,12 +4,10 @@ name: export-and-branch-solution
 on:
   workflow_dispatch:
     inputs:
-      # Change this value
       solution_name:
         description: 'Name of the solution to work on from Power Platform'
         required: true
         default: ALMLab
-      # Do not change these values
       solution_exported_folder:
         description: 'Folder name for staging the exported solution *do not change*'
         required: true
@@ -24,7 +22,6 @@ on:
         default: solutions/
 
 env:
-  # Edit your values here
   ENVIRONMENT_URL: 'https://dtzdemosandbox.crm.dynamics.com'
   CLIENT_ID: '39221a7d-af20-4cdb-b2a9-7b64ee3be52b'
   TENANT_ID: 'add67cd2-c8b2-416c-b171-b61b22be92f4'
@@ -35,15 +32,19 @@ permissions:
 jobs:
   export-from-dev:
     runs-on: windows-latest
-    # Alternative: runs-on: ubuntu-latest
     env:
       RUNNER_DEBUG: 1
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           lfs: true
+
+      - name: Install Power Platform CLI (PAC)
+        uses: microsoft/powerplatform-actions/actions-install@v1
+        with:
+          pac-version: 'latest'  # You can specify a specific version if needed
 
       - name: Who-Am-I action
         uses: microsoft/powerplatform-actions/who-am-i@v1
@@ -78,13 +79,3 @@ jobs:
           solution-target-folder: ${{ github.event.inputs.solution_target_folder }}${{ github.event.inputs.solution_name }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           allow-empty-commit: true
-
-      - name: Commit and push changes
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add .
-          git commit -m "Add solution updates"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
