@@ -1,83 +1,80 @@
 name: export-and-branch-solution
-# Export solution from DEV environment
-#  unpack it and prepare, commit and push a git branch with the changes
+# Export solution from DEV environment, unpack it, prepare, commit, and push a git branch with the changes.
 
 on:
   workflow_dispatch:
     inputs:
       # Change this value
       solution_name:
-        description: 'name of the solution to worked on from Power Platform'
+        description: 'Name of the solution to work on from Power Platform'
         required: true
         default: ALMLab
-       #Do Not change these values
+      # Do not change these values
       solution_exported_folder:
-        description: 'folder name for staging the exported solution *do not change*'
+        description: 'Folder name for staging the exported solution *do not change*'
         required: true
         default: out/exported/
       solution_folder:
-        description: 'staging the unpacked solution folder before check-in *do not change*'
+        description: 'Staging the unpacked solution folder before check-in *do not change*'
         required: true
         default: out/solutions/
-      solution_target_folder: 
-       description: 'folder name to be created and checked in *do not change*'
-       required: true
-       default: solutions/
+      solution_target_folder:
+        description: 'Folder name to be created and checked in *do not change*'
+        required: true
+        default: solutions/
+
 env:
-#edit your values here
+  # Edit your values here
   ENVIRONMENT_URL: 'https://dtzdemosandbox.crm.dynamics.com'
   CLIENT_ID: '39221a7d-af20-4cdb-b2a9-7b64ee3be52b'
   TENANT_ID: 'add67cd2-c8b2-416c-b171-b61b22be92f4'
+
 permissions:
   contents: write
+
 jobs:
   export-from-dev:
     runs-on: windows-latest
-    # or you can say runs-on: ubuntu-latest
+    # Alternative: runs-on: ubuntu-latest
     env:
       RUNNER_DEBUG: 1
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        timeout-minutes: 10
-    - name: Install Dependencies
-      run: npm install -g pac
-            curl -I https://api.github.com/repos/microsoft/powerplatform-actions/zipball/0c80aacb61f9bfdcb930b880febc420ec4ef2f3e
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
 
-    - name: Run Who-Am-I Action
-      uses: microsoft/powerplatform-actions/who-am-i@v1
-      with:
-        environment-url: ${{env.ENVIRONMENT_URL}}
-        app-id: ${{env.CLIENT_ID}}
-        client-secret: ${{ secrets.PowerPlatformSPN }}
-        tenant-id: ${{env.TENANT_ID}}
+      - name: Who-Am-I action
+        uses: microsoft/powerplatform-actions/who-am-i@v0
+        with:
+          environment-url: ${{ env.ENVIRONMENT_URL }}
+          app-id: ${{ env.CLIENT_ID }}
+          client-secret: ${{ secrets.PowerPlatformSPN }}
+          tenant-id: ${{ env.TENANT_ID }}
 
+      - name: Export solution action
+        uses: microsoft/powerplatform-actions/export-solution@v0
+        with:
+          environment-url: ${{ env.ENVIRONMENT_URL }}
+          app-id: ${{ env.CLIENT_ID }}
+          client-secret: ${{ secrets.PowerPlatformSPN }}
+          tenant-id: ${{ env.TENANT_ID }}
+          solution-name: ${{ github.event.inputs.solution_name }}
+          solution-output-file: ${{ github.event.inputs.solution_exported_folder }}${{ github.event.inputs.solution_name }}.zip
 
-    - name: export-solution action
-      uses: microsoft/powerplatform-actions/export-solution@v0
-      with:
-        environment-url: ${{env.ENVIRONMENT_URL}}
-        app-id: ${{env.CLIENT_ID}}
-        client-secret: ${{ secrets.PowerPlatformSPN }}
-        tenant-id: ${{env.TENANT_ID}}
-        solution-name: ${{ github.event.inputs.solution_name }}
-        solution-output-file: ${{ github.event.inputs.solution_exported_folder}}/${{ github.event.inputs.solution_name }}.zip
+      - name: Unpack solution action
+        uses: microsoft/powerplatform-actions/unpack-solution@v0
+        with:
+          solution-file: ${{ github.event.inputs.solution_exported_folder }}${{ github.event.inputs.solution_name }}.zip
+          solution-folder: ${{ github.event.inputs.solution_folder }}${{ github.event.inputs.solution_name }}
+          solution-type: 'Unmanaged'
+          overwrite-files: true
 
-    - name: unpack-solution action
-      uses: microsoft/powerplatform-actions/unpack-solution@v0
-      with:
-        solution-file: ${{ github.event.inputs.solution_exported_folder}}/${{ github.event.inputs.solution_name }}.zip
-        solution-folder: ${{ github.event.inputs.solution_folder}}/${{ github.event.inputs.solution_name }}
-        solution-type: 'Unmanaged'
-        overwrite-files: true
-
-    - name: branch-solution, prepare it for a PullRequest
-      uses: microsoft/powerplatform-actions/branch-solution@v0
-      with:
-        solution-folder: ${{ github.event.inputs.solution_folder}}/${{ github.event.inputs.solution_name }}
-        solution-target-folder: ${{ github.event.inputs.solution_target_folder}}/${{ github.event.inputs.solution_name }}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        allow-empty-commit: true
+      - name: Branch solution, prepare it for a Pull Request
+        uses: microsoft/powerplatform-actions/branch-solution@v0
+        with:
+          solution-folder: ${{ github.event.inputs.solution_folder }}${{ github.event.inputs.solution_name }}
+          solution-target-folder: ${{ github.event.inputs.solution_target_folder }}${{ github.event.inputs.solution_name }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          allow-empty-commit: true
